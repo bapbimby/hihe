@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OtpMail;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +28,10 @@ Route::get('/test', function () {
     return 'Laravel is working! Config loaded: ' . (config('app.key') ? 'YES' : 'NO');
 });
 
-// Local-only: send a test email using current mail configuration
+// Development-only helper route removed for safety.
+// If you need to re-enable a local test-email route, restore the implementation below
+// and ensure it's only enabled in local environments (and not committed with credentials):
+/*
 Route::get('/dev-send-test-email', function (Request $request) {
     if (config('app.env') !== 'local') {
         return response('Not available', 404);
@@ -46,6 +51,7 @@ Route::get('/dev-send-test-email', function (Request $request) {
         return response()->json(['status' => 'error', 'message' => 'Unable to send test email. Check logs.'], 500);
     }
 });
+*/
 
 // Authentication Routes
 Route::get('/login', function() {
@@ -75,12 +81,9 @@ Route::get('/home', function () {
 // Development helper routes removed for safety.
 
     // OTP endpoints
-    use Illuminate\Support\Facades\Mail;
-    use App\Mail\OtpMail;
-    use Illuminate\Http\Request as HttpRequest;
 
     Route::middleware('throttle:5,1')->group(function () {
-        Route::post('/send-otp', function (HttpRequest $request) {
+        Route::post('/send-otp', function (Request $request) {
             $request->validate(['email' => 'required|email|max:255']);
             $email = $request->input('email');
 
@@ -111,7 +114,7 @@ Route::get('/home', function () {
             ]);
         });
 
-        Route::post('/verify-otp', function (HttpRequest $request) {
+        Route::post('/verify-otp', function (Request $request) {
             $request->validate(['email' => 'required|email|max:255', 'code' => 'required|digits:6']);
             $email = $request->input('email');
             $code = $request->input('code');
